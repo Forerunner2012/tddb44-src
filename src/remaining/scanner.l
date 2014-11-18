@@ -7,7 +7,7 @@
 #include "scanner.hh"
 // This is where you put #include directives as needed for later labs.
 // include "ast.hh", parser.hh" in that order
-#include "symtab.hh"
+
 
 int column = 0;
 
@@ -141,7 +141,10 @@ DIGIT [0-9]
 
 
 of                       {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_OF;                               
                          }
 if                       {
                             yylloc.first_line = yylineno;
@@ -150,55 +153,100 @@ if                       {
                             return T_IF;
                          }
 do                       {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_DO;                            
                          }
 or                       {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_OR;                            
                          }
 var                      {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_VAR;                            
                          }
 end                      {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_END;                               
                          }
 and                      {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_AND;                               
                          }
 div                      {
-                            
+                            /*yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_DIV; */                              
                          }
 mod                      {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_MOD;                               
                          }
 not                      {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_NOT;                               
                          }
 then                     {
                             yylloc.first_line = yylineno;
                             yylloc.first_column = column;
                             column += yyleng;
-                            return T_THEN; 
+                            return T_THEN;
                          }
 else                     {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_ELSE;
                          }
 const                    {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_CONST;
                          }
 array                    {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_ARRAY;
                          }
 begin                    {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_BEGIN;
                          }
 while                    {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_WHILE;
                          }
 elsif                    {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_ELSIF;
                          }
 return                   {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_RETURN;
                          }
 program                  {
 			    yylloc.first_line = yylineno;
@@ -236,7 +284,7 @@ procedure                {
 			  return T_REALNUM;
 			}
 
-{DIGIT}*"."{DIGIT}+([eE][+-]?{DIGIT}+)?	{	/* FIX ME: 4E10 .1e-4*/
+{DIGIT}*"."{DIGIT}+([eE][+-]?{DIGIT}+)?	{
 			  yylval.rval = atof(yytext);
 			  yylloc.first_line = yylineno;
 			  yylloc.first_column = column;
@@ -254,27 +302,46 @@ procedure                {
 			
 
 			
-[ \t\r]+		{
+[ \t]+			{
 			  yylloc.first_column = column;
 			  column += yyleng;
 			}
 
-[ \n]+			{
+[\n]+			{
 			  yylloc.first_column = column;
 			  column = 0;
 			}
 
-\'[^\n]*[^\']$         	{
-			  yyerror("Newline in string");
-			}
-			
-\'[^\n]*\'         	{
-			  yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
+"\'"                    {
+                            column += yyleng;
+			    yymore();
+                            BEGIN(c_string);
+                         }
+
+<c_string>
+{
+    "\'"	        {
+                          printf("\n%s\n", yytext);
+                          yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
 			  yylloc.first_line = yylineno;
 			  yylloc.first_column = column;
 			  column += yyleng;
 			  return T_STRINGCONST;
-			 }			 
+                        }
+    "\'\'"		{
+			  yymore();
+			  column += yyleng;
+			}
+    [^\n]               {
+			  yymore();
+			  column += yyleng;
+			}
+    \n                  yyerror("Newline in string");
+    <<EOF>>             {
+                            yyerror("Unterminated string");
+                            yyterminate();
+                        }
+}
 			
 \/\/.*$                  column = 0; /* Skip single-line comment */
 "/\*"                    {

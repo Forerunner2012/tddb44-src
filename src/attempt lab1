@@ -1,0 +1,51 @@
+\'[^\n]*[^\']$         	{
+			  column += 2;
+			  yyerror("Newline in string");
+			  yylineno -= 1;
+			}
+			
+\'[^\n]*\'         	{
+			  yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
+			  yylloc.first_line = yylineno;
+			  yylloc.first_column = column;
+			  column += yyleng;
+			  return T_STRINGCONST;
+			 }
+
+
+/*
+Need to declqre
+char string_temp[55];
+int string_index = 0;
+*/
+
+
+"\'"                    {
+                            column += yyleng;
+			    yymore();
+                            BEGIN(c_string);
+                         }
+
+<c_string>
+{
+    "\'" ["'"]         {
+                          yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
+			  yylloc.first_line = yylineno;
+			  yylloc.first_column = column;
+			  column += yyleng;
+			  return T_STRINGCONST;
+                        }
+    [^\n]               {
+			  yymore();
+			}
+    \n                  yyerror("Newline in string");
+    <<EOF>>             {
+                            yyerror("Unterminated string");
+                            yyterminate();
+                        }
+}
+
+
+
+'test 
+sss
