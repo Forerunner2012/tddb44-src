@@ -1370,7 +1370,6 @@ case 46:
 YY_RULE_SETUP
 #line 315 "scanner.l"
 {
-                            column += yyleng;
 			    yymore();
                             BEGIN(c_string);
                          }
@@ -1379,37 +1378,38 @@ YY_RULE_SETUP
 
 case 47:
 YY_RULE_SETUP
-#line 323 "scanner.l"
+#line 322 "scanner.l"
 {
-                          printf("{\n%s\n", yytext);
-                          yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
+                          yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext));
 			  yylloc.first_line = yylineno;
 			  yylloc.first_column = column;
 			  column += yyleng;
+			  BEGIN(INITIAL);
 			  return T_STRINGCONST;
                         }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 331 "scanner.l"
+#line 330 "scanner.l"
 {
 			  yymore();
-			  column += yyleng;
 			}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 335 "scanner.l"
+#line 333 "scanner.l"
 {
 			  yymore();
-			  column += yyleng;
 			}
 	YY_BREAK
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 339 "scanner.l"
-yyerror("Newline in string");
+#line 336 "scanner.l"
+{
+			  yyerror("Newline in string");
+			  BEGIN(INITIAL);
+			}
 	YY_BREAK
 case YY_STATE_EOF(c_string):
 #line 340 "scanner.l"
@@ -1524,12 +1524,12 @@ yyterminate();
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 394 "scanner.l"
+#line 395 "scanner.l"
 yyerror("Illegal character");	
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 401 "scanner.l"
+#line 402 "scanner.l"
 ECHO;
 	YY_BREAK
 #line 1536 "scanner.cc"
@@ -2540,4 +2540,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 401 "scanner.l"
+#line 402 "scanner.l"
