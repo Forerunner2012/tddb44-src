@@ -532,14 +532,23 @@ sym_index symbol_table::current_environment()
 void symbol_table::open_scope()
 {
     /* Your code here */
+    if (current_level >= MAX_BLOCK) {
+      fatal("MAX_BLOCK scope reached !");
+    }
+    
+    current_level = current_level + 1;
+    block_table[current_level] = sym_pos;
 }
 
 
 /* Decrease the current_level by one. Return sym_index to new environment. */
 sym_index symbol_table::close_scope()
 {
-    /* Your code here */
-    return NULL_SYM;
+    /* Your code here return NULL_SYM;*/
+    //TODO Make hash links for all variable in the scope (see fig 6.16)
+    
+    current_level = current_level - 1;
+    return block_table[current_level];
 }
 
 
@@ -550,7 +559,22 @@ sym_index symbol_table::close_scope()
    follows hash links outwards. */
 sym_index symbol_table::lookup_symbol(const pool_index pool_p)
 {
-    /* Your code here */
+    /* Your code here 
+     use pool_lookup() to find the symbol and then do hashing to recover it or not.
+     */
+    
+    //we use the index of the symbol on the hash table and get the link to the symtable where the symbol is storred
+    sym_index found_link = hash_table[hash(pool_p)];
+    
+    //loop untill we found our symbol or nothing (NULL_SYM)
+    while (found_link != NULL_SYM) {
+      if (pool_compare((sym_table[found_link]->id),pool_p) {
+	return found_link;
+      }
+      //access to the next symbol id in the sym_tab through the hash_link
+      found_link = (sym_table[found_link]->hash_link);
+    }
+    
     return NULL_SYM;
 }
 
@@ -641,6 +665,56 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
                                        const sym_type tag)
 {
     /* Your code here */
+    //1. Check if symbol already exists and return this index + MAX_SYM
+    sym_index result = lookup_symbol(pool_p);
+    if (result != NULL_SYM) {
+      return result;
+    }
+    
+    if (sym_pos >= MAX_SYM + &sym_table) {
+      fatal("MAX_SYM is reached !");	//TODO fix and check me
+    }
+    
+    //2. Manage the eight different types of tag
+    symbol* s;
+    switch(tag)
+    {
+      case SYM_ARRAY:
+	s = new array_symbol(pool_p);
+	break;
+      case SYM_FUNC:
+	s = new function_symbol(pool_p);
+	break;
+      case SYM_PROC:
+	s = new procedure_symbol(pool_p);
+	break;
+      case SYM_VAR:
+	s = new variable_symbol(pool_p);
+	break;
+      case SYM_PARAM:
+	s = new parameter_symbol(pool_p);
+	break;
+      case SYM_CONST:
+	s = new constant_symbol(pool_p);
+	break;
+      case SYM_NAMETYPE:
+	s = new nametype_symbol(pool_p);
+	break;
+      case SYM_UNDEF:
+	s = new symbol(pool_p);
+	break;
+      default:
+	fatal("Unknown types ! (from install_symbol)")
+    }
+    
+    //3. Add the new created object to the symbol table
+    s->id = pool_p;
+    s->tag = tag;
+    s->type = pool_p;	//TODO
+    s->hash_link = pool_p;
+    s->level = current_level;
+    s->offset = 0;
+    
     return 0; // Return index to the symbol we just created.
 }
 
