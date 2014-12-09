@@ -544,8 +544,17 @@ void symbol_table::open_scope()
 /* Decrease the current_level by one. Return sym_index to new environment. */
 sym_index symbol_table::close_scope()
 {
-    /* Your code here return NULL_SYM;*/
-    //TODO Make hash links for all variable in the scope (see fig 6.16)
+    // Make hash links for all variable in the scope (see fig 6.16)
+    sym_index hashIndex;
+    
+    // Check page 63 for the algorithm
+    for (sym_index i = sym_pos; i > (block_table[current_level] + 1) ; i--){
+      hashIndex = hash(symbol_table[i]);
+      
+      if (hash_table[hashIndex] == i){
+	 hash_table[hashIndex] = sym_pos->hash_link;
+      }
+    }
     
     current_level = current_level - 1;
     return block_table[current_level];
@@ -708,14 +717,45 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
     }
     
     //3. Add the new created object to the symbol table
+    // First we create the object
     s->id = pool_p;
     s->tag = tag;
     s->type = pool_p;	//TODO
-    s->hash_link = pool_p;
+    s->hash_link = NULL_SYM;
     s->level = current_level;
     s->offset = 0;
     
-    return 0; // Return index to the symbol we just created.
+    // Then we seek for the correct position
+    sym_index hashIndex = hash(pool_p);
+    sym_pos position = hash_table[hashIndex]
+    
+    // Check if the position in the hash table is empty
+    if (sym_table[position] == NULL_SYM){
+      sym_table[position] = s;
+    
+    } else { 
+	bool contains = false;
+	
+	// Check if the symbol is in the used position or in a linked one
+	while(!contains && position != NULL_SYM){
+	  
+	  if(pool_compare(get_symbol_id(position), s->id)){
+	    contains = true;
+	  } else {
+	    position = sym_table[position]->hash_link;
+	  }
+	}
+	
+	// Do the hash_link if necessary
+	if (!contains){
+	  s->hash_link = hash_table[hashIndex];
+	  hash_table[hashIndex] = ++sym_pos;
+	  sym_table[sym_pos] = s;
+	  position = sym_pos;
+	}
+    }    
+    
+    return position; // Return index to the symbol we just created.
 }
 
 /* Enter a constant into the symbol table. The value is an integer. The type
