@@ -680,10 +680,12 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
       return result;
     }
     
-    if (sym_pos >= MAX_SYM + &sym_table) {
+	sym_pos++;
+    if (sym_pos >= MAX_SYM) {
       fatal("MAX_SYM is reached !");	//TODO fix and check me
     }
-    
+	result = sym_pos;    
+
     //2. Manage the eight different types of tag
     symbol* s;
     switch(tag)
@@ -716,6 +718,7 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
 	fatal("Unknown types ! (from install_symbol)")
     }
     
+/*
     //3. Add the new created object to the symbol table
     // First we create the object
     s->id = pool_p;
@@ -756,6 +759,28 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
     }    
     
     return position; // Return index to the symbol we just created.
+*/
+
+	//After the switch case, i should only have done that
+	//No need to do a loop, just create new link (on NULL is possible) like a list
+
+	//Get the link of the string in the hash table
+	hash_index hashIndex = hash(pool_p);
+
+	//Update the symbol struct
+	s->back_link = hashIndex;
+	s->hash_link = hash_table[hashIndex];
+	s->level = current_level;   
+	s->offset = 0;
+
+	//Add it in the sym table
+	hash_table[hashIndex] = result;
+	sym_table[sym_pos] = s;
+
+	// Return index to the symbol we just created.
+	return sym_pos;
+
+
 }
 
 /* Enter a constant into the symbol table. The value is an integer. The type
