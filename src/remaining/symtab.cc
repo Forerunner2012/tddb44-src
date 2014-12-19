@@ -1024,8 +1024,27 @@ sym_index symbol_table::enter_function(position_information *pos,
 sym_index symbol_table::enter_procedure(position_information *pos,
                                         const pool_index pool_p)
 {
-    /* Your code here */
-    return NULL_SYM;
+    /* Your code here (safe downcasting =  casting a reference of a base class to one of its derived classes) */
+	sym_index sym_p = install_symbol(pool_p, SYM_PROC);
+	procedure_symbol *proc = sym_table[sym_p]->get_procedure_symbol();
+
+	//Is it already declared in the code?
+	if(proc->tag != SYM_UNDEF) {
+	type_error(pos) << "Redeclaration: " << proc << endl;
+	return sym_p;
+	}
+
+	//Fill the procedure specific fields
+	proc->tag = SYM_PROC;
+	proc->last_parameter = NULL;
+
+	proc->ar_size = 0;
+	proc->label_nr = get_next_label();
+
+	//Put it in the symbol table then return its index
+	sym_table[sym_p] = proc;
+
+	return sym_p;
 }
 
 
