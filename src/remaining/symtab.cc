@@ -548,12 +548,19 @@ sym_index symbol_table::close_scope()
     sym_index hashIndex;
     
     // Check page 63 for the algorithm
-    for (sym_index i = sym_pos; i > (block_table[current_level] + 1) ; i--){
-      hashIndex = hash(symbol_table[i]);
-      
-      if (hash_table[hashIndex] == i){
-	 hash_table[hashIndex] = sym_pos->hash_link;
-      }
+    for (sym_index i = sym_pos; i > (block_table[current_level] + 1) ; i--)
+	{
+		//Get the symbol in the i index
+		symbol *s = get_symbol(i);
+
+		//Update the back link
+		hashIndex = s->back_link;
+
+		//check if hash table point to the symbol 
+		if (hash_table[hashIndex] == i){
+			//Let it point instead point to what the symbol points to with its hash link
+			hash_table[hashIndex] = s->hash_link;
+		}
     }
     
     current_level = current_level - 1;
@@ -577,7 +584,7 @@ sym_index symbol_table::lookup_symbol(const pool_index pool_p)
     
     //loop untill we found our symbol or nothing (NULL_SYM)
     while (found_link != NULL_SYM) {
-      if (pool_compare((sym_table[found_link]->id),pool_p) {
+      if (pool_compare((sym_table[found_link]->id),pool_p)) {
 	return found_link;
       }
       //access to the next symbol id in the sym_tab through the hash_link
@@ -715,7 +722,7 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
 	s = new symbol(pool_p);
 	break;
       default:
-	fatal("Unknown types ! (from install_symbol)")
+		fatal("Unknown types ! (from install_symbol)");
     }
     
 /*
@@ -779,7 +786,6 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
 
 	// Return index to the symbol we just created.
 	return sym_pos;
-
 
 }
 
