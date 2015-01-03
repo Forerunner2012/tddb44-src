@@ -249,15 +249,22 @@ return                   {
                             return T_RETURN;
                          }
 program                  {
-			    yylloc.first_line = yylineno;
-			    yylloc.first_column = column;
-			    return T_PROGRAM;
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_PROGRAM;
                          }
 function                 {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_FUNCTION;
                          }
 procedure                {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_PROCEDURE;                            
                          }
 
 {DIGIT}+		{

@@ -544,11 +544,12 @@ void symbol_table::open_scope()
 /* Decrease the current_level by one. Return sym_index to new environment. */
 sym_index symbol_table::close_scope()
 {
+/*
     // Make hash links for all variable in the scope (see fig 6.16)
     sym_index hashIndex;
     
     // Check page 63 for the algorithm
-    for (sym_index i = sym_pos; i > (block_table[current_level] + 1) ; i--)
+    for (sym_index i = sym_pos; i > block_table[current_level] ; i--)
 	{
 		//Get the symbol in the i index
 		symbol *s = get_symbol(i);
@@ -565,6 +566,29 @@ sym_index symbol_table::close_scope()
     
     current_level = current_level - 1;
     return block_table[current_level];
+*/
+	//Set the last position in the scopes
+	sym_index last_pos = current_environment();
+	//Set the position with when the scope closed (ahead from last)
+	sym_index next_pos = sym_pos;
+
+	// Check page 63 for the algorithm behaviour
+	while(next_pos > last_pos) {
+		//Get back the symbol linked in the next position
+		sym_index hash_link = sym_table[next_pos]->hash_link;
+
+		//Update the back link of the current symbol in the table
+		hash_table[sym_table[next_pos]->back_link] = hash_link;
+
+		//Set to NULL_SYM the hash links for the symbol in the scope
+		(sym_table[next_pos]->hash_link) = NULL_SYM;
+
+		//Check next symbol through the hash link
+		next_pos--;
+	}
+
+	current_level--;
+	return block_table[current_level];
 }
 
 
@@ -681,97 +705,55 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
                                        const sym_type tag)
 {
     /* Your code here */
-    //1. Check if symbol already exists and return this index + MAX_SYM
+    //1. Check if symbol already exists and return this index
     sym_index result = lookup_symbol(pool_p);
-    if (result != NULL_SYM) {
+    if (result > current_environment()) {
       return result;
     }
     
-	sym_pos++;
     if (sym_pos >= MAX_SYM) {
-      fatal("MAX_SYM is reached !");	//TODO fix and check me
-    }
-	result = sym_pos;    
+      fatal("MAX_SYM is reached !");
+    } 
 
     //2. Manage the eight different types of tag
     symbol* s;
     switch(tag)
     {
-      case SYM_ARRAY:
-	s = new array_symbol(pool_p);
-	break;
-      case SYM_FUNC:
-	s = new function_symbol(pool_p);
-	break;
-      case SYM_PROC:
-	s = new procedure_symbol(pool_p);
-	break;
-      case SYM_VAR:
-	s = new variable_symbol(pool_p);
-	break;
-      case SYM_PARAM:
-	s = new parameter_symbol(pool_p);
-	break;
-      case SYM_CONST:
-	s = new constant_symbol(pool_p);
-	break;
-      case SYM_NAMETYPE:
-	s = new nametype_symbol(pool_p);
-	break;
-      case SYM_UNDEF:
-	s = new symbol(pool_p);
-	break;
-      default:
-		fatal("Unknown types ! (from install_symbol)");
-    }
-    
+	case SYM_ARRAY:
+		s = new array_symbol(pool_p);
+		break;
+	case SYM_FUNC:
+		s = new function_symbol(pool_p);
+		break;
+	case SYM_PROC:
+		s = new procedure_symbol(pool_p);
+		break;
+	case SYM_VAR:
+		s = new variable_symbol(pool_p);
+		break;
+	case SYM_PARAM:
+		s = new parameter_symbol(pool_p);
+		break;
+	case SYM_CONST:
+		s = new constant_symbol(pool_p);
+		break;
+	case SYM_NAMETYPE:
+		s = new nametype_symbol(pool_p);
+		break;
 /*
-    //3. Add the new created object to the symbol table
-    // First we create the object
-    s->id = pool_p;
-    s->tag = tag;
-    s->type = pool_p;	//TODO
-    s->hash_link = NULL_SYM;
-    s->level = current_level;
-    s->offset = 0;
-    
-    // Then we seek for the correct position
-    sym_index hashIndex = hash(pool_p);
-    sym_pos position = hash_table[hashIndex]
-    
-    // Check if the position in the hash table is empty
-    if (sym_table[position] == NULL_SYM){
-      sym_table[position] = s;
-    
-    } else { 
-	bool contains = false;
-	
-	// Check if the symbol is in the used position or in a linked one
-	while(!contains && position != NULL_SYM){
-	  
-	  if(pool_compare(get_symbol_id(position), s->id)){
-	    contains = true;
-	  } else {
-	    position = sym_table[position]->hash_link;
-	  }
-	}
-	
-	// Do the hash_link if necessary
-	if (!contains){
-	  s->hash_link = hash_table[hashIndex];
-	  hash_table[hashIndex] = ++sym_pos;
-	  sym_table[sym_pos] = s;
-	  position = sym_pos;
-	}
-    }    
-    
-    return position; // Return index to the symbol we just created.
+	case SYM_UNDEF:
+		s = new symbol(pool_p);
+		break;
 */
-
+	default:
+		fatal("Unknown types ! (from install_symbol)");
+	}
+    
 	//After the switch case, i should only have done that
 	//No need to do a loop, just create new link (on NULL is possible) like a list
 
 	//Get the link of the string in the hash table
+	sym_pos++;	
 	hash_index hashIndex = hash(pool_p);
 
 	//Update the symbol struct
@@ -781,7 +763,7 @@ sym_index symbol_table::install_symbol(const pool_index pool_p,
 	s->offset = 0;
 
 	//Add it in the sym table
-	hash_table[hashIndex] = result;
+	hash_table[hashIndex] = sym_pos;
 	sym_table[sym_pos] = s;
 
 	// Return index to the symbol we just created.
@@ -1038,6 +1020,11 @@ sym_index symbol_table::enter_procedure(position_information *pos,
 	if(proc->tag != SYM_UNDEF) {
 	type_error(pos) << "Redeclaration: " << proc << endl;
 	return sym_p;
+	}
+
+	//Set the symbol type for the procedure
+	if(current_level >= 0) {
+		set_symbol_type(sym_p, void_type);
 	}
 
 	//Fill the procedure specific fields

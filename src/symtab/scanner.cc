@@ -1275,28 +1275,35 @@ case 36:
 YY_RULE_SETUP
 #line 251 "scanner.l"
 {
-			    yylloc.first_line = yylineno;
-			    yylloc.first_column = column;
-			    return T_PROGRAM;
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_PROGRAM;
                          }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 256 "scanner.l"
+#line 257 "scanner.l"
 {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_FUNCTION;
                          }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 259 "scanner.l"
+#line 263 "scanner.l"
 {
-                            
+                            yylloc.first_line = yylineno;
+                            yylloc.first_column = column;
+                            column += yyleng;
+                            return T_PROCEDURE;                            
                          }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 263 "scanner.l"
+#line 270 "scanner.l"
 {
 			  yylval.ival = atoi(yytext);
 			  yylloc.first_line = yylineno;
@@ -1307,7 +1314,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 271 "scanner.l"
+#line 278 "scanner.l"
 {
 			  yylval.rval = atof(yytext);
 			  yylloc.first_line = yylineno;
@@ -1318,7 +1325,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 279 "scanner.l"
+#line 286 "scanner.l"
 {
 			  yylval.rval = atof(yytext);
 			  yylloc.first_line = yylineno;
@@ -1329,7 +1336,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 287 "scanner.l"
+#line 294 "scanner.l"
 {
 			  yylval.rval = atof(yytext);
 			  yylloc.first_line = yylineno;
@@ -1340,7 +1347,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 295 "scanner.l"
+#line 302 "scanner.l"
 {
 			  yylval.pool_p = sym_tab->pool_install(sym_tab->capitalize(yytext));
 			  yylloc.first_line = yylineno;
@@ -1351,7 +1358,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 305 "scanner.l"
+#line 312 "scanner.l"
 {
 			  yylloc.first_column = column;
 			  column += yyleng;
@@ -1360,7 +1367,7 @@ YY_RULE_SETUP
 case 45:
 /* rule 45 can match eol */
 YY_RULE_SETUP
-#line 310 "scanner.l"
+#line 317 "scanner.l"
 {
 			  yylloc.first_column = column;
 			  column = 0;
@@ -1368,7 +1375,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 315 "scanner.l"
+#line 322 "scanner.l"
 {
                             column += yyleng;
 			    yymore();
@@ -1379,7 +1386,7 @@ YY_RULE_SETUP
 
 case 47:
 YY_RULE_SETUP
-#line 323 "scanner.l"
+#line 330 "scanner.l"
 {
                           printf("\n%s\n", yytext);
                           yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
@@ -1391,7 +1398,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 331 "scanner.l"
+#line 338 "scanner.l"
 {
 			  yymore();
 			  column += yyleng;
@@ -1399,7 +1406,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 335 "scanner.l"
+#line 342 "scanner.l"
 {
 			  yymore();
 			  column += yyleng;
@@ -1408,11 +1415,11 @@ YY_RULE_SETUP
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 339 "scanner.l"
+#line 346 "scanner.l"
 yyerror("Newline in string");
 	YY_BREAK
 case YY_STATE_EOF(c_string):
-#line 340 "scanner.l"
+#line 347 "scanner.l"
 {
                             yyerror("Unterminated string");
                             yyterminate();
@@ -1424,12 +1431,12 @@ case 51:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 346 "scanner.l"
+#line 353 "scanner.l"
 column = 0; /* Skip single-line comment */
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 347 "scanner.l"
+#line 354 "scanner.l"
 {
                             column += yyleng;
                             BEGIN(c_comment);
@@ -1439,7 +1446,7 @@ YY_RULE_SETUP
 
 case 53:
 YY_RULE_SETUP
-#line 354 "scanner.l"
+#line 361 "scanner.l"
 {
                             column += 2;
                             BEGIN(INITIAL);
@@ -1447,7 +1454,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 358 "scanner.l"
+#line 365 "scanner.l"
 {
                             column += 2;
                             yyerror("Suspicious comment");
@@ -1455,17 +1462,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 362 "scanner.l"
+#line 369 "scanner.l"
 column++; /* Skip stuff in comments */
 	YY_BREAK
 case 56:
 /* rule 56 can match eol */
 YY_RULE_SETUP
-#line 363 "scanner.l"
+#line 370 "scanner.l"
 column = 0;
 	YY_BREAK
 case YY_STATE_EOF(c_comment):
-#line 364 "scanner.l"
+#line 371 "scanner.l"
 {
                             yyerror("Unterminated comment");
                             yyterminate();
@@ -1474,7 +1481,7 @@ case YY_STATE_EOF(c_comment):
 
 case 57:
 YY_RULE_SETUP
-#line 370 "scanner.l"
+#line 377 "scanner.l"
 {
                             column += yyleng;
                             BEGIN(d_comment);
@@ -1484,7 +1491,7 @@ YY_RULE_SETUP
 
 case 58:
 YY_RULE_SETUP
-#line 377 "scanner.l"
+#line 384 "scanner.l"
 {
                             column += 2;
                             BEGIN(INITIAL);
@@ -1492,7 +1499,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 381 "scanner.l"
+#line 388 "scanner.l"
 {
                             column += 2;
                             yyerror("Suspicious d comment");
@@ -1500,17 +1507,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 385 "scanner.l"
+#line 392 "scanner.l"
 column++; /* Skip stuff in comments */
 	YY_BREAK
 case 61:
 /* rule 61 can match eol */
 YY_RULE_SETUP
-#line 386 "scanner.l"
+#line 393 "scanner.l"
 column = 0;
 	YY_BREAK
 case YY_STATE_EOF(d_comment):
-#line 387 "scanner.l"
+#line 394 "scanner.l"
 {
                             yyerror("Unterminated d comment");
                             yyterminate();
@@ -1519,20 +1526,20 @@ case YY_STATE_EOF(d_comment):
 
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(flex):
-#line 393 "scanner.l"
+#line 400 "scanner.l"
 yyterminate();
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 394 "scanner.l"
+#line 401 "scanner.l"
 yyerror("Illegal character");	
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 401 "scanner.l"
+#line 408 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1536 "scanner.cc"
+#line 1543 "scanner.cc"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2540,4 +2547,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 401 "scanner.l"
+#line 408 "scanner.l"
