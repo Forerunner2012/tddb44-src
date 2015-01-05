@@ -1167,11 +1167,11 @@ case 25:
 YY_RULE_SETUP
 #line 187 "scanner.l"
 {
-                            /*yylloc.first_line = yylineno;
+                            yylloc.first_line = yylineno;
                             yylloc.first_column = column;
                             column += yyleng;
-                            return T_DIV; */                              
-                         }
+                            return T_IDIV;
+						 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP

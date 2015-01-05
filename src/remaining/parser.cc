@@ -1813,7 +1813,7 @@ yyreduce:
 					position_information *pos = new position_information((yylsp[-8]).first_line, (yylsp[-8]).first_column);
 					//Add variable type array to symtab (only integer in arrays: see symbol_table::enter_array
 					// in symtab.cc). That's why next rule don't take real and only integer
-					sym_tab->enter_array(pos, (yyvsp[-8].pool_p), (yyvsp[-1].id)->sym_p,(yyvsp[-1].id)->sym_p);
+					sym_tab->enter_array(pos, (yyvsp[-8].pool_p), (yyvsp[-1].id)->sym_p,(yyvsp[-4].integer)->value);
                 }
 #line 1819 "parser.cc" /* yacc.c:1646  */
     break;

@@ -306,7 +306,7 @@ var_decl        : T_IDENT T_COLON type_id T_SEMICOLON
 					position_information *pos = new position_information(@1.first_line, @1.first_column);
 					//Add variable type array to symtab (only integer in arrays: see symbol_table::enter_array
 					// in symtab.cc). That's why next rule don't take real and only integer
-					sym_tab->enter_array(pos, $1, $8->sym_p,$8->sym_p);
+					sym_tab->enter_array(pos, $1, $8->sym_p,$5->value);
                 }
                 | T_IDENT T_COLON T_ARRAY T_LEFTBRACKET const_id T_RIGHTBRACKET T_OF type_id T_SEMICOLON
                 {

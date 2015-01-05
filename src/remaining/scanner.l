@@ -185,11 +185,11 @@ and                      {
                             return T_AND;                               
                          }
 div                      {
-                            /*yylloc.first_line = yylineno;
+                            yylloc.first_line = yylineno;
                             yylloc.first_column = column;
                             column += yyleng;
-                            return T_DIV; */                              
-                         }
+                            return T_IDIV;
+						 }
 mod                      {
                             yylloc.first_line = yylineno;
                             yylloc.first_column = column;

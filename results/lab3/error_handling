@@ -1,0 +1,158 @@
+This is a document to explain the error handling implementations in the lab 3. SOme example are extracted from the rule for a given type or cited entirely (if it's quite small).
+
+
+line 265-280 for const_decl: //We finish by handling 4 errors due to error in right handside value or left semi colon
+				| T_IDENT T_EQ error T_SEMICOLON
+				{
+					yyerror("Assignement can't be done for constant (const_decl), error in right-handside.");
+				} 
+				| T_IDENT T_EQ integer error
+				{
+					yyerror("Assignement can't be done for constant (const_decl), semicolon is missing.");
+				}
+				| T_IDENT T_EQ real error
+				{
+					yyerror("Assignement can't be done for  constant (const_decl), semicolon is missing.");
+				}
+				| T_IDENT T_EQ const_id error
+				{
+					yyerror("Assignement can't be done for  constant (const_decl), semicolon is missing.");
+				} 
+
+line 616-711 for stmt:
+stmt            : T_IF expr T_THEN stmt_list elsif_list else_part T_END
+                {
+                    /* Your code here */
+					//Set position_information
+					position_information *pos = new position_information(@1.first_line,@1.first_column);
+					//refer to ast_if struct in ast.hh for constructor info
+					$$ = new ast_if(pos, $2, $4, $5, $6);
+
+				//we add one error handling rule for that in expr
+                }
+				| T_IF error T_THEN stmt_list elsif_list else_part T_END
+				{
+					yyerror("Error (stmt) in if-condtion (expr)");
+					$$ = NULL;
+				}
+                | T_WHILE expr T_DO stmt_list T_END
+                {
+                    /* Your code here */
+					//Set position_information
+					position_information *pos = new position_information(@1.first_line,@1.first_column);
+					//refer to ast_if struct in ast.hh for ast_while info
+					$$ = new ast_while(pos, $2, $4);
+
+				//we add 3 error handling rules for that in couple (expr, stmt_list)
+                }
+				| T_WHILE error T_DO stmt_list T_END
+				{
+					yyerror("Error (stmt) in the while cdt (expr)");
+					$$ = NULL;
+				}
+				| T_WHILE expr T_DO error T_END
+				{
+					yyerror("Error (stmt) in the while body DO (stmt_list)");
+					$$ = NULL;
+				}
+				| T_WHILE error T_DO error T_END
+				{
+					yyerror("Error he while cdt and the while body DO (expr, stmt_list)");
+					$$ = NULL;
+				}
+                | proc_id T_LEFTPAR opt_expr_list T_RIGHTPAR
+                {
+                    /* Your code here */
+					//Set position_information
+					position_information *pos = new position_information(@1.first_line,@1.first_column);
+					//refer to ast_procedurecall struct in ast.hh for info
+					$$ = new ast_procedurecall(pos, $1, $3);
+
+				//we add 1 error handling rule for that in couple (expr, stmt_list)
+                }
+				| proc_id T_LEFTPAR error T_RIGHTPAR
+				{
+					yyerror("Can't call procedure (stmt), error in args (opt_expr_list)");
+					$$ = NULL;
+				}
+                | lvariable T_ASSIGN expr
+                {
+                    /* Your code here */
+					//Set position_information
+					position_information *pos = new position_information(@1.first_line,@1.first_column);
+					//ast_assign
+					$$ = new ast_assign(pos, $1, $3);
+                }
+				| lvariable T_ASSIGN error
+				{
+					yyerror("Assignement can't be done (stmt), error is in right expr");
+					$$ = NULL;
+				}
+                | T_RETURN expr
+                {
+                    /* Your code here */
+					//Set position_information
+					position_information *pos = new position_information(@1.first_line,@1.first_column);
+					//ast_return
+					$$ = new ast_return(pos, $2);
+                }
+				| T_RETURN error
+                {
+                    yyerror("Return can't be done (stmt), error is returned (expr)");
+					$$ = NULL;
+                }
+                | T_RETURN
+                {
+                    /* Your code here */
+					//Set position_information
+					position_information *pos = new position_information(@1.first_line,@1.first_column);
+					//ast_return
+		  			$$ = new ast_return(pos); 
+                }
+                
+                | /* empty */
+                {
+                    /* Your code here */
+					$$ = NULL;
+                }
+
+line 713-729 for lvariable:
+lvariable       : lvar_id
+                {
+                    $$ = $1;
+                }
+                | array_id T_LEFTBRACKET expr T_RIGHTBRACKET
+                {
+                    $$ = new ast_indexed($1->pos,
+                                         $1,
+                                         $3);
+                }
+                | array_id T_LEFTBRACKET error T_RIGHTBRACKET
+                {
+					//Add the error output
+					yyerror("Error in index expression (lvariable)");
+                    $$ = NULL;
+                }
+                ;
+
+line 732-749 for rvariable:
+rvariable       : rvar_id
+                {
+                    /* Your code here */
+					$$ = $1;
+                }
+                | array_id T_LEFTBRACKET expr T_RIGHTBRACKET
+                {
+                    /* Your code here */
+					//similar to lvariable
+					$$ = new ast_indexed($1->pos,$1,$3);
+                }
+				| array_id T_LEFTBRACKET error T_RIGHTBRACKET
+				{
+					//Same as lvariable and add the error output
+					yyerror("Error in index expression (rvariable)");
+					$$ = NULL;
+				}                
+                ;
+
+
