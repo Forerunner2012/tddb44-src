@@ -11,9 +11,15 @@ diff results/lab2/symtabtest3.trace src/trace/symtab2c.trace
 **Modif 03-01-2015 **:Create new branch on git repo and preparation for the lab have been done.
 
 **TEST lab3 (in tddb44-src/results/lab3 folder)**
-./diesel -a -b -c -f -p parstest1.d 
-./diesel -a -b -c -f -p parstest2.d 
-./diesel -a -b -c -f -p parstest3.d 
+./diesel -a -b -c -f -p parstest1.d	
+./diesel -a -b -c -f -p parstest2.d
+./diesel -a -b -c -f -p parstest3.d
+
+diff parstest1.trace parstesttest1.trace		Passed
+diff parstest2.trace parstesttest2.trace		Passed (give more error info)
+diff parstest3.trace parstesttest3.trace		Passed
+
+**TEST 4
 ./diesel -a -b -c -f -p semtest1.d 
 ./diesel -a -b -c -f -p semtest2.d 
 

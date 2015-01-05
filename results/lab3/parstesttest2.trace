@@ -1,0 +1,19 @@
+An AST will be printed for each block.
+No type checking will be performed.
+No optimization will be done.
+No quads will be generated.
+Error: line 10: syntax error
+Error: line 10: Assignement can't be done (stmt), error is in right expr
+
+Unoptimized AST for global level
+Statement list (preceding, last_stmt)
++-NULL
++-Assignment (left, right)
+  +-Id (Y) [INTEGER]
+  +-Sub (left, right) [VOID]
+    +-Integer [10]
+    +-Mult (left, right) [VOID]
+      +-Integer [5]
+      +-Id (TWO) [INTEGER]
+Found 2 errors. Compilation aborted.
+
