@@ -22,9 +22,11 @@ diff parstest2.trace parstesttest2.trace		Passed (give more error info)
 diff parstest3.trace parstesttest3.trace		Passed
 diff semtest1.trace semtesttest1.trace			Passed (not the same text because no type checking, but same symbol table)
 
+
+**Modif 05-01-2015: Create new branch on git repo and preparation for the lab have been done.
 **TEST 4
-./diesel -a -b -c -f -p semtest1.d 
-./diesel -a -b -c -f -p semtest2.d 
+./diesel -b -p -f -y -a semtest1.d 
+./diesel -b -p -f -y -a semtest2.d 
 
 diff semtest1.trace semtesttest1.trace
 diff semtest2.trace semtesttest2.trace
