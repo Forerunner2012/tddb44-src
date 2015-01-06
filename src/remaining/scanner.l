@@ -302,14 +302,18 @@ procedure                {
 			}
 			
 [a-zA-Z"_"][a-zA-Z0-9"_"]* {
-			  yylval.pool_p = sym_tab->pool_install(sym_tab->capitalize(yytext));
-			  yylloc.first_line = yylineno;
-			  yylloc.first_column = column;
-			  column += yyleng;
-			  return T_IDENT;
-			}
-			
+			yylloc.first_line = yylineno;
+			yylloc.first_column = column;
+			column += yyleng;
 
+			yylval.pool_p = sym_tab->pool_install(sym_tab->capitalize(yytext));
+			sym_index tmp = sym_tab->lookup_symbol(yylval.pool_p);
+			if(tmp != NULL_SYM) {
+				sym_tab->pool_forget(yylval.pool_p);
+				yylval.pool_p = (sym_tab->get_symbol(tmp))->id;
+			}
+			return T_IDENT;
+			}
 			
 [ \t]+			{
 			  yylloc.first_column = column;
