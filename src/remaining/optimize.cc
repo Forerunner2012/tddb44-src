@@ -334,6 +334,7 @@ ast_expression *ast_optimizer::fold_constants(ast_expression *node)
             result = new ast_integer(binrel_toop->left->pos, value);
         }
     }
+/*FIXME
   	else if (node->tag == AST_CAST) {
 		//Simplify the cast operation as possible (cast operation to optimize)
 		//Get the type of the element to cast (integer only to cast to real)
@@ -342,6 +343,7 @@ ast_expression *ast_optimizer::fold_constants(ast_expression *node)
 			result = new ast_real(node->pos, get_float(node->get_ast_cast()->expr));
 		}
     }
+*/
     return result;
 }
 

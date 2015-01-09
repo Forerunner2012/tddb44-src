@@ -65,8 +65,14 @@ void semantic::check_parameters(ast_id *call_id,
                                 ast_expr_list *param_list)
 {
     /* Your code here */
-	//Separate operations with function and procedure
+	//Check type
+	if(param_list != NULL) {
+		param_list->type_check();
+	}
+
 	symbol* s = sym_tab->get_symbol(call_id->sym_p);
+
+	//Separate operations with function and procedure
 	if (s->tag == SYM_FUNC){
 		//Get the specific function symbol and check its last_parameter recursively
 		function_symbol* func_s = s->get_function_symbol(); 
@@ -81,16 +87,10 @@ void semantic::check_parameters(ast_id *call_id,
 		//Get the specific procedure symbol and check its last_parameter recursively
 		procedure_symbol* proc_s = s->get_procedure_symbol(); 
 		parameter_symbol* formals = proc_s->last_parameter;
-	
-		//FIXED : Check if it's usefull
-		//Check if the param_list is empty
-		if(param_list != NULL) {
-			param_list->type_check();
-		}
-		
+
+		////Check if the param_list is same type
 		if(!chk_param(call_id, formals, param_list)) {
-			type_error(call_id->pos) << "Error with the argument type in the procedure call (check_parameters)"
-				<< endl;
+			type_error(call_id->pos) << "argument type error in procedure call" << endl;
 		}
 	}
 	else{
@@ -207,7 +207,8 @@ sym_index ast_indexed::type_check()
         type_error(index->pos) << "Array indexes can only be integers (ast_indexed)" << endl;
     }
 	//return the type (shall be integer)
-    return id->type_check();
+	type = id->type_check();
+    return type;
 }
 
 
@@ -530,10 +531,17 @@ sym_index ast_functioncall::type_check()
     /* Your code here */
 	//Check if the parameters are type-correct and check if the function is not void
 	//As before, we got direct access to the object attributes
-	type_checker->check_parameters(id, parameter_list);
+
+/*Changed to return type via a get function
+type_checker->check_parameters(id, parameter_list);
     if (type == void_type)
         type_error(pos) << "Functions can't return void. A value need to be return." << endl;
     return type;
+*/
+
+	type_checker->check_parameters(id, parameter_list);
+	symbol* sym = sym_tab->get_symbol(id->sym_p);
+	return sym->type;
 }
 
 sym_index ast_uminus::type_check()
@@ -559,7 +567,9 @@ sym_index ast_elsif::type_check()
 	if (condition->type_check() != integer_type) {
         type_error(condition->pos) << "ElseIf condition type must be integer (ast_elsif::type_check)" << endl;
     }
-	body->type_check();
+	if(body != NULL) {
+		body->type_check();
+	}
     return void_type;
 }
 

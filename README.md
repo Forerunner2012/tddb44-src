@@ -36,8 +36,13 @@ diff semtest2.trace semtesttest2.trace
 **Modif 07-01-2015: Deicde to optimize what needed by defaut + ad_cast + binary_relation
 We choose to implement the optimization of the cast (quite simple and short to do)
 **TEST lab5
-./diesel -b -p -f -a opttest1.d		(no opt)
-./diesel -b -p -a opttest1.d		(opt)		
+./diesel -b -p -f -a opttest1.d		(no opt)	
+./diesel -b -p -a opttest1.d		(opt)	Passed (some differences due to optional features)	
 
 diff opttest1.trace opttesttest1.trace
 
+**Modif 09-01-2015: Update the result repository content and implement functions in quad.cc
+**TEST lab6
+./diesel -b -q -y quadtest1.d		State unknown (may differs from example due to optional features last lab)
+
+diff quadtest1.trace quadtesttest1.trace
