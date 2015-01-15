@@ -49,6 +49,6 @@ diff quadtest1.trace quadtesttest1.trace
 
 **Modif 14-01-2015: Got issue with the codetest1.d without regarding the lab7 content. Need to search for it in previous modification (think about quads and optimize: may have done some illegal operations by errors or cast)
 **TEST lab7
-./diesel -y codetest1.d		
+./diesel -y codetest1.d				Passed (Compiler is producind what expected (except one part: simplification of division have been done and make the result vary a bit)
 
 diff codetest1.trace codetesttest1.trace
