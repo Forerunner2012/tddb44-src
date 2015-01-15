@@ -1,0 +1,235 @@
+L4:			# WRITE_INT
+		push	rbp
+		mov	rcx, rsp
+		push	[rbp-8]
+		push	rcx
+		mov	rbp, rcx
+		sub	rsp, 264
+		mov	rax, 0
+		mov	rcx, [rbp-16]
+		mov	[rcx-128], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx+16]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-128]
+		cmp	rax, rcx
+		je	L14
+		mov	rax, 0
+		jmp	L15
+		L14:
+		mov	rax, 1
+		L15:
+		mov	rcx, [rbp-16]
+		mov	[rcx-120], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-120]
+		cmp	rax, 0
+		je	L6
+		mov	rax, 48
+		push	rax
+		call	L1
+		add	rsp, 8
+		jmp	L5
+L6:
+L7:
+		mov	rax, 0
+		mov	rcx, [rbp-16]
+		mov	[rcx-144], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx+16]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-144]
+		cmp	rax, rcx
+		jl	L16
+		mov	rax, 0
+		jmp	L17
+		L16:
+		mov	rax, 1
+		L17:
+		mov	rcx, [rbp-16]
+		mov	[rcx-136], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-136]
+		cmp	rax, 0
+		je	L8
+		mov	rax, 45
+		push	rax
+		call	L1
+		add	rsp, 8
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx+16]
+		neg	rax
+		mov	rcx, [rbp-16]
+		mov	[rcx-152], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-152]
+		mov	rcx, [rbp-16]
+		mov	[rcx+16], rax
+L8:
+L9:
+		mov	rax, 0
+		mov	rcx, [rbp-16]
+		mov	[rcx-160], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-160]
+		mov	rcx, [rbp-16]
+		mov	[rcx-112], rax
+L10:
+		mov	rax, 0
+		mov	rcx, [rbp-16]
+		mov	[rcx-176], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx+16]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-176]
+		cmp	rax, rcx
+		jg	L18
+		mov	rax, 0
+		jmp	L19
+		L18:
+		mov	rax, 1
+		L19:
+		mov	rcx, [rbp-16]
+		mov	[rcx-168], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-168]
+		cmp	rax, 0
+		je	L11
+		mov	rax, 10
+		mov	rcx, [rbp-16]
+		mov	[rcx-192], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx+16]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-192]
+		cqo
+		idiv	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	[rcx-184], rdx
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-184]
+		mov	rcx, [rbp-16]
+		mov	[rcx-24], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-24]
+		mov	rcx, 48
+		add	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	[rcx-200], rax
+		mov	rcx, [rbp-16]
+		sub	rcx, 32
+		mov	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-112]
+		imul	rcx, 8
+		sub	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	[rcx-208], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-200]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-208]
+		mov	[rcx], rax
+		mov	rax, 1
+		mov	rcx, [rbp-16]
+		mov	[rcx-224], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-112]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-224]
+		add	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	[rcx-216], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-216]
+		mov	rcx, [rbp-16]
+		mov	[rcx-112], rax
+		mov	rax, 10
+		mov	rcx, [rbp-16]
+		mov	[rcx-240], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx+16]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-240]
+		cqo
+		idiv	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	[rcx-232], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-232]
+		mov	rcx, [rbp-16]
+		mov	[rcx+16], rax
+		jmp	L10
+L11:
+L12:
+		mov	rax, 0
+		mov	rcx, [rbp-16]
+		mov	[rcx-256], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-112]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-256]
+		cmp	rax, rcx
+		jg	L20
+		mov	rax, 0
+		jmp	L21
+		L20:
+		mov	rax, 1
+		L21:
+		mov	rcx, [rbp-16]
+		mov	[rcx-248], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-248]
+		cmp	rax, 0
+		je	L13
+		mov	rax, 1
+		mov	rcx, [rbp-16]
+		mov	[rcx-272], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-112]
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-272]
+		sub	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	[rcx-264], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-264]
+		mov	rcx, [rbp-16]
+		mov	[rcx-112], rax
+		mov	rcx, [rbp-16]
+		sub	rcx, 32
+		mov	rax, rcx
+		mov	rcx, [rbp-16]
+		mov	rcx, [rcx-112]
+		imul	rcx, 8
+		sub	rax, rcx
+		mov	rax, [rax]
+		mov	rcx, [rbp-16]
+		mov	[rcx-280], rax
+		mov	rcx, [rbp-16]
+		mov	rax, [rcx-280]
+		push	rax
+		call	L1
+		add	rsp, 8
+		jmp	L12
+L13:
+L5:
+		leave	
+		ret	
+L3:			# MAIN
+		push	rbp
+		mov	rcx, rsp
+		push	rcx
+		mov	rbp, rcx
+		sub	rsp, 8
+		mov	rax, 23
+		mov	rcx, [rbp-8]
+		mov	[rcx-16], rax
+		mov	rcx, [rbp-8]
+		mov	rax, [rcx-16]
+		push	rax
+		call	L4
+		add	rsp, 8
+L22:
+		leave	
+		ret	

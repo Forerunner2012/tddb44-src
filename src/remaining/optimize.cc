@@ -236,7 +236,7 @@ float ast_optimizer::calculate_float(ast_binaryoperation *node)
     default:
         fatal("Error in optimization: Not a valid operation for real (float)");
         return -1;
-    }
+	}
 }
 
 int ast_optimizer::calculate_integer(ast_binaryoperation *node)
@@ -293,7 +293,7 @@ int ast_optimizer::calculate_relation(ast_binaryrelation *node)
 
 void ast_indexed::optimize()
 {
-    /* Your code here */
+    /* Your code here. */
     index->optimize();
     index = optimizer->fold_constants(index);
 }
@@ -304,7 +304,7 @@ void ast_indexed::optimize()
 ast_expression *ast_optimizer::fold_constants(ast_expression *node)
 {
     /* Your code here. */
-	//result ill be the node that will replace the actual node in case of possible optimization
+	//result will be the node that will replace the actual node in case of possible optimization
     ast_expression *result = node;
     if (is_binop(node))
     {
@@ -345,6 +345,7 @@ ast_expression *ast_optimizer::fold_constants(ast_expression *node)
     }
 */
     return result;
+
 }
 
 /* All the binary operations should already have been detected in their parent
@@ -467,7 +468,10 @@ void ast_greaterthan::optimize()
 void ast_procedurecall::optimize()
 {
     /* Your code here */
-    parameter_list->optimize();
+    //parameter_list->optimize();
+	if(parameter_list != NULL) {
+		parameter_list->optimize();
+	}
 }
 
 
@@ -512,16 +516,22 @@ void ast_if::optimize()
 
 void ast_return::optimize()
 {
-    /* Your code here */
-    value->optimize();
-    value = optimizer->fold_constants(value);
+    /* Your code here. */
+    if (value != NULL)
+    {
+        value->optimize();
+        value = optimizer->fold_constants(value);
+    }
 }
 
 
 void ast_functioncall::optimize()
 {
     /* Your code here */
-    parameter_list->optimize();
+    //parameter_list->optimize();
+	if(parameter_list != NULL) {
+		parameter_list->optimize();
+	}
 }
 
 void ast_uminus::optimize()
@@ -567,7 +577,13 @@ void ast_real::optimize()
 void ast_cast::optimize()
 {
     /* Your code here */
-	//HINT: See in the fold_constants() for AST_CAST
+	//NOTE: Uncomment if with AST_CAST in the fold_constants()
+	//create more problem than that grant
+
+	/*
+	expr->optimize();
+	expr = optimizer->fold_constants(expr);
+	*/
 }
 
 
@@ -582,3 +598,5 @@ void ast_functionhead::optimize()
 {
     fatal("Trying to call ast_functionhead::optimize()");
 }
+
+

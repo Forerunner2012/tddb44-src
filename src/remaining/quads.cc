@@ -140,7 +140,7 @@ sym_index ast_id::generate_quads(quad_list &q)
     USE_Q;
     /* Your code here */
 	//Not useful result
-    return NULL_SYM;
+    return sym_p;
 }
 
 
@@ -559,13 +559,21 @@ sym_index ast_return::generate_quads(quad_list &q)
     USE_Q;
     /* Your code here */
 	//Return can be return integer or real value
-    if(value->type == integer_type) {
-      q += new quadruple(q_ireturn, q.last_label, value->generate_quads(q), NULL_SYM);
-    }
-    else {
-      q += new quadruple(q_rreturn, q.last_label, value->generate_quads(q), NULL_SYM);
-    }
-    return NULL_SYM;
+	//NOTE: Need to take take when there is no return value
+	if(value != NULL) {
+		sym_index sym_p = value->generate_quads(q);
+		if(value->type == integer_type) {
+			q += new quadruple(q_ireturn, q.last_label, sym_p, NULL_SYM);
+		}
+		else {
+			q += new quadruple(q_rreturn, q.last_label, sym_p, NULL_SYM);
+		}
+		return sym_p;
+		}
+	else {
+		q+= new quadruple(q_jmp, q.last_label, NULL_SYM, NULL_SYM);
+	}
+	return NULL_SYM;
 }
 
 
