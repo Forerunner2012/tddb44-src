@@ -43,6 +43,12 @@ diff opttest1.trace opttesttest1.trace
 
 **Modif 09-01-2015: Update the result repository content and implement functions in quad.cc
 **TEST lab6
-./diesel -b -q -y quadtest1.d		State unknown (may differs from example due to optional features last lab)
+./diesel -b -q -y quadtest1.d		Passed (may differs from example due to optional features last lab)
 
 diff quadtest1.trace quadtesttest1.trace
+
+**Modif 14-01-2015: Got issue with the codetest1.d without regarding the lab7 content. Need to search for it in previous modification (think about quads and optimize: may have done some illegal operations by errors or cast)
+**TEST lab7
+./diesel -y codetest1.d		
+
+diff codetest1.trace codetesttest1.trace

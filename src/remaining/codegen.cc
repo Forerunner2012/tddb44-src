@@ -68,6 +68,9 @@ void code_generator::prologue(symbol *new_env)
     // Used to count parameters.
     parameter_symbol *last_arg;
 
+	//Add: Added variable for counting level (specified scope level)
+	block_level level;
+
     // Again, we need a safe downcast for a procedure/function.
     // Note that since we have already generated quads for the entire block
     // before we expand it to assembler, the size of the activation record
@@ -77,12 +80,18 @@ void code_generator::prologue(symbol *new_env)
         ar_size = align(proc->ar_size);
         label_nr = proc->label_nr;
         last_arg = proc->last_parameter;
+
+		//ADD: level is set to the procedure level
+		level = proc->level;
     } else if (new_env->tag == SYM_FUNC) {
         function_symbol *func = new_env->get_function_symbol();
         /* Make sure ar_size is a multiple of eight */
         ar_size = align(func->ar_size);
         label_nr = func->label_nr;
         last_arg = func->last_parameter;
+
+		//ADD: level is set to the procedure level
+		level = func->level;
     } else {
         fatal("code_generator::prologue() called for non-proc/func");
         return;
@@ -99,8 +108,21 @@ void code_generator::prologue(symbol *new_env)
     }
 
     /* Your code here */
+	//Need to add the Activation record code (see page 150 for code)
+	//Some procedure (part 1)
+	out << "\t\t" <<"push" << "\t" << "rbp" << endl;
+	out << "\t\t" <<"mov" << "\t" << "rcx" << ", " << "rsp" << endl;
 
-    out << flush;
+	//Any other display values are copied here (part 2)
+	for(int i=1; i<=level; i++) {
+		out << "\t\t" <<"push" << "\t" << "[rbp-" << STACK_WIDTH*i << "]" << endl;
+	}
+
+	//push the previous rsp on the stack, new rbp, ... (part 3)
+	out << "\t\t" <<"push" << "\t" << "rcx" << endl;
+	out << "\t\t" <<"mov" << "\t" << "rbp" << ", " << "rcx" << endl;
+	out << "\t\t" <<"sub" << "\t" << "rsp" << ", " << ar_size << endl;
+	out << flush;
 }
 
 
@@ -114,7 +136,10 @@ void code_generator::epilogue(symbol *old_env)
     }
 
     /* Your code here */
-
+	//Need to add the epilogue from the Activation record code (see page 150 for code)
+	//It would be part 5 (after translated quadruples = part 4)
+    out << "\t\t" <<"leave" << "\t" << endl;
+    out << "\t\t" <<"ret" << "\t" << endl;
     out << flush;
 }
 
@@ -125,6 +150,23 @@ void code_generator::epilogue(symbol *old_env)
 void code_generator::find(sym_index sym_p, int *level, int *offset)
 {
     /* Your code here */
+	//No return value, parameters value are changed (through pointers)
+	symbol *s = sym_tab->get_symbol(sym_p);
+	*level = s->level;
+
+	if(s->tag == SYM_ARRAY) {
+		*offset = -((*level + 1) * STACK_WIDTH) - s->offset;
+	}
+	else if(s->tag == SYM_VAR) {
+		*offset = -(((*level) + 1) * STACK_WIDTH) - s->offset;
+	}
+	else if(s->tag == SYM_PARAM) {
+		int size = s->get_parameter_symbol()->size;
+		*offset = STACK_WIDTH + s->offset + size;
+	}
+	else {
+		fatal("Only ARRAY, VAR and PARAM are supported by (code_generator::find)");
+	}
 }
 
 /*
@@ -133,6 +175,8 @@ void code_generator::find(sym_index sym_p, int *level, int *offset)
 void code_generator::frame_address(int level, const register_type dest)
 {
     /* Your code here */
+	//See memory access on page 138
+	out << "\t\t" << "mov" << "\t" << reg[dest] << ", " << "[rbp-" << STACK_WIDTH*(level) << "]" << endl; 
 }
 
 /* This function fetches the value of a variable or a constant into a
@@ -140,11 +184,82 @@ void code_generator::frame_address(int level, const register_type dest)
 void code_generator::fetch(sym_index sym_p, register_type dest)
 {
     /* Your code here */
+	//2 cases to manage: constant or variable
+	//See memory access on page 138
+	symbol* s = sym_tab->get_symbol(sym_p);
+	if(s->tag == SYM_CONST) {
+		//Specific behaviour to deal with for real (ieee conversion needed)
+		constant_symbol *const_s = s->get_constant_symbol();
+		long value;
+		if(const_s->type == real_type) {
+			value = sym_tab->ieee(const_s->const_value.rval);
+		}
+		else {
+			value = const_s->const_value.ival;
+		}
+		out << "\t\t" << "mov" << "\t" << reg[dest] << ", " << value << endl;  
+	}
+	else {
+		int level;
+		int offset;
+
+		//Find the symbol and update value of the parameters
+		find(sym_p, &level, &offset);
+
+		//Set reg[dest] to frame_start of level
+		frame_address(level, RCX);
+
+		//Apply offset to reg[dest]
+		if(offset > 0) {
+			out << "\t\t" << "mov" << "\t" << reg[dest] << ", [" << reg[RCX] << "+" << offset << "]" << endl;  
+		}
+		else {
+			out << "\t\t" << "mov" << "\t" << reg[dest] << ", [" << reg[RCX] << offset << "]" << endl;  
+		}
+	}
 }
 
+/*
+ * Method that push the value of a variable, parameter or constant to the FPU.
+ * Only used for real (not for real constant)
+ */
 void code_generator::fetch_float(sym_index sym_p)
 {
     /* Your code here */
+	//Similar architecture han the previous procedure but the output code is different (push value to FPU)
+	symbol* s = sym_tab->get_symbol(sym_p);
+	if(s->tag == SYM_CONST) {
+		constant_symbol *const_s = s->get_constant_symbol();
+		long value;
+		if(const_s->type == real_type) {
+			value = sym_tab->ieee(const_s->const_value.rval);
+		}
+		else {
+			value = const_s->const_value.ival;
+		}
+		out << "\t\t" << "mov" << "\t" << reg[RCX] << ", " << value << endl;  
+		out << "\t\t" << "sub" << "\t" << "rsp" << ", " << STACK_WIDTH << endl;
+		out << "\t\t" << "mov" << "\t[" << "rsp" << "], " << reg[RCX] << endl;
+		out << "\t\t" << "fld" << "\t" << "qword ptr [" << "rsp" << "]" << endl;
+		out << "\t\t" << "add" << "\t" << "rsp" << ", " << STACK_WIDTH << endl;  
+	}
+	else {
+		int level;
+		int offset;
+
+		//Find the symbol and update value of the parameters
+		find(sym_p, &level, &offset);
+
+		//Set reg[dest] to frame_start of level
+		frame_address(level, RCX);
+
+		if(offset > 0) {
+			out << "\t\t" << "fld" << "\t" << "qword ptr [" << reg[RCX] << "+" << offset << "]" << endl; 
+		}
+		else {
+			out << "\t\t" << "fld" << "\t" << "qword ptr [" << reg[RCX] << offset << "]" << endl; 
+		}
+	}
 }
 
 
@@ -153,11 +268,38 @@ void code_generator::fetch_float(sym_index sym_p)
 void code_generator::store(register_type src, sym_index sym_p)
 {
     /* Your code here */
+	//We need to update the level and offset from the symbol and then choose the appropriate output
+	int level;
+	int offset;
+
+	find(sym_p, &level, &offset); 
+	frame_address(level, RCX);
+
+	if(offset > 0) {
+		out << "\t\t" << "mov" << "\t" << "[" << reg[RCX] << "+" << offset << "], " << reg[src] << endl; 
+	}
+	else {
+		out << "\t\t" << "mov" << "\t" << "[" << reg[RCX] << offset << "], " << reg[src] << endl; 
+	}
 }
 
 void code_generator::store_float(sym_index sym_p)
 {
     /* Your code here */
+	//Similar as before but different output
+	//We need to update the level and offset from the symbol and then choose the appropriate output
+	int level;
+	int offset;
+
+	find(sym_p, &level, &offset); 
+	frame_address(level, RCX);
+
+	if(offset > 0) {
+		out << "\t\t" << "fstp" << "\t" << "qword ptr [rcx"<< "+" << offset << "]"<< endl;
+	}
+	else {
+		out << "\t\t" << "fstp" << "\t" << "qword ptr [rcx" << offset << "]" << endl;
+	}
 }
 
 
@@ -165,6 +307,21 @@ void code_generator::store_float(sym_index sym_p)
 void code_generator::array_address(sym_index sym_p, register_type dest)
 {
     /* Your code here */
+	//Similar as before but different output
+	//We need to update the level and offset from the symbol and then choose the appropriate output
+	int level;
+	int offset;
+
+	find(sym_p, &level, &offset); 
+	frame_address(level, RCX);
+
+	if(offset > 0) {
+		out << "\t\t" << "mov" << "\t" << reg[dest] << ", [" << reg[dest] << "+" << offset << "]" << endl;  
+	}
+	else {
+		out << "\t\t" << "sub" << "\t" << reg[RCX] << ", " << (-1)*offset << endl;
+		out << "\t\t" << "mov" << "\t" << reg[dest] << ", " << reg[RCX] << endl;
+	}
 }
 
 /* This method expands a quad_list into assembler code, quad for quad. */
@@ -516,11 +673,27 @@ void code_generator::expand(quad_list *q_list)
 
         case q_param:
             /* Your code here */
+			fetch(q->sym1, RAX);
+			//Add the parameter to the stack
+			out << "\t\t" << "push" << "\t" << "rax" << endl;
             break;
 
         case q_call: {
             /* Your code here */
-            break;
+			//Two translation possible depends if it is a function or a procedure
+			symbol *s = sym_tab->get_symbol(q->sym1);
+			if(q->sym3 == NULL_SYM) {
+				procedure_symbol *proc_s = s->get_procedure_symbol();
+				out << "\t\t" << "call" << "\t" << "L" << proc_s->label_nr << endl;
+			}
+			//Function (with res), do not forget to store at the end
+			else {
+				function_symbol *func_s = s->get_function_symbol();
+				out << "\t\t" << "call" << "\t" << "L" << func_s->label_nr << endl;
+				store(RAX, q->sym3); 
+			}
+			out << "\t\t" << "add" << "\t" << "rsp" << ", " << STACK_WIDTH*q->sym2 << endl;
+			break;
         }
         case q_rreturn:
         case q_ireturn:
