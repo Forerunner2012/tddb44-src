@@ -98,6 +98,12 @@ void ast_expr_list::optimize()
 	}
 	if (last_expr != NULL) {
 		last_expr->optimize();
+		//Check if it's a binary operation
+		if (optimizer->is_binop(last_expr))
+		{
+			//Perform constant folding if needed and place it in the tree
+			last_expr = optimizer->fold_constants(last_expr);
+		}
 	}
 }
 
