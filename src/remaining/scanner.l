@@ -29,8 +29,9 @@ extern YYLTYPE yylloc; // Used for position information, see below.
 
 %x c_comment
 %x d_comment
-%x c_string
+%x string
 DIGIT [0-9]
+CHAR [^\n']
 /* {DIGIT}+"."{DIGIT}*
  ID [a-z][a-z0-9]* */flex
 
@@ -281,86 +282,95 @@ procedure                {
 				}
 
 {DIGIT}+"."		{
-			  yylval.rval = atof(yytext);
-			  yylloc.first_line = yylineno;
-			  yylloc.first_column = column;
-			  column += yyleng;
-			  return T_REALNUM;
-			}
+					yylval.rval = atof(yytext);
+					yylloc.first_line = yylineno;
+					yylloc.first_column = column;
+					column += yyleng;
+					return T_REALNUM;
+				}
 			
 {DIGIT}+[eE][+-]?{DIGIT}+	{
-			  yylval.rval = atof(yytext);
-			  yylloc.first_line = yylineno;
-			  yylloc.first_column = column;
-			  column += yyleng;
-			  return T_REALNUM;
-			}
+					yylval.rval = atof(yytext);
+					yylloc.first_line = yylineno;
+					yylloc.first_column = column;
+					column += yyleng;
+					return T_REALNUM;
+				}
 
 {DIGIT}*"."{DIGIT}+([eE][+-]?{DIGIT}+)?	{
-			  yylval.rval = atof(yytext);
-			  yylloc.first_line = yylineno;
-			  yylloc.first_column = column;
-			  column += yyleng;
-			  return T_REALNUM;
-			}
+					yylval.rval = atof(yytext);
+					yylloc.first_line = yylineno;
+					yylloc.first_column = column;
+					column += yyleng;
+					return T_REALNUM;
+				}
 			
 [a-zA-Z"_"][a-zA-Z0-9"_"]* {
-			yylloc.first_line = yylineno;
-			yylloc.first_column = column;
-			column += yyleng;
+					yylloc.first_line = yylineno;
+					yylloc.first_column = column;
+					column += yyleng;
 
-			yylval.pool_p = sym_tab->pool_install(sym_tab->capitalize(yytext));
-			sym_index tmp = sym_tab->lookup_symbol(yylval.pool_p);
-			if(tmp != NULL_SYM) {
-				sym_tab->pool_forget(yylval.pool_p);
-				yylval.pool_p = (sym_tab->get_symbol(tmp))->id;
-			}
-			return T_IDENT;
-			}
+					yylval.pool_p = sym_tab->pool_install(sym_tab->capitalize(yytext));
+					sym_index tmp = sym_tab->lookup_symbol(yylval.pool_p);
+					if(tmp != NULL_SYM) {
+						sym_tab->pool_forget(yylval.pool_p);
+						yylval.pool_p = (sym_tab->get_symbol(tmp))->id;
+					}
+					return T_IDENT;
+				}
 			
-[ \t]+			{
-			  yylloc.first_column = column;
-			  column += yyleng;
-			}
 
-[\n]+			{
-			  yylloc.first_column = column;
-			  column = 0;
-			}
+"\'"			{
+					yylloc.first_line=yylineno;
+					yylloc.first_column=column;
+					column += 1;
+					BEGIN(string);
+				}
 
-"\'"                    {
-                            column += yyleng;
-			    yymore();
-                            BEGIN(c_string);
-                         }
-
-<c_string>
+<string>
 {
-    "\'"	        {
-                          printf("\n%s\n", yytext);
-                          yylval.pool_p = sym_tab->pool_install(sym_tab->fix_string(yytext)); /* or also \'.**\' , need a fun-ction to handle the error*/
-			  yylloc.first_line = yylineno;
-			  yylloc.first_column = column;
-			  column += yyleng;
-			  return T_STRINGCONST;
-                        }
-    "\'\'"		{
-			  yymore();
-			  column += yyleng;
-			}
-    [^\n]               {
-			  yymore();
-			  column += yyleng;
-			}
-    \n                  yyerror("Newline in string");
-    <<EOF>>             {
-                            yyerror("Unterminated string");
-                            yyterminate();
-                        }
+	({CHAR}|"''")*"'"		{
+								column += yyleng;
+												
+								int i = 0;
+								int s_length = 0;
+
+								while (yytext[i] != '\0')
+								{
+									s_length++;
+									i++;
+								}    
+								s_length++;/*Take the leading apostroph into account*/
+
+								char yyfull[s_length +1]; /* for the termination character*/
+								yyfull[0]='\'';
+								yyfull[s_length]='\0';/* termination character*/
+								for (i = s_length-1;i>=1; --i)
+								{
+									yyfull[i]=yytext[i-1];
+								}
+
+								yylval.str = sym_tab->pool_install((sym_tab->fix_string(yyfull)));
+
+								BEGIN(INITIAL);
+								return T_STRINGCONST;
+							}
+	({CHAR}|"''")*\n		{
+								column = 0;
+								yyerror("Newline in string");
+								error_count++;
+								BEGIN(INITIAL);
+							}
+	<<EOF>>					{
+								yyerror("Unterminated string");
+								error_count++;
+							}
+	
 }
 			
-\/\/.*$                  column = 0; /* Skip single-line comment */
-"/\*"                    {
+\/\/.*$                  column = 0; /* Skip single-line C comment */
+
+"/\*"                    {	/*	C comment	*/
                             column += yyleng;
                             BEGIN(c_comment);
                          }
@@ -373,17 +383,19 @@ procedure                {
                          }
     "/\*"                {
                             column += 2;
-                            yyerror("Suspicious comment");
+                            yyerror("Suspicious c_comment");
+							error_count++;
                          }
     [^\n]                column++; /* Skip stuff in comments */
     \n                   column = 0;
     <<EOF>>              {
-                            yyerror("Unterminated comment");
+                            yyerror("Unterminated c_comment");
+							error_count++;
                             yyterminate();
                          }
 }
 
-"\{"                    {
+"\{"                    {	/*	Diesel comment	*/
                             column += yyleng;
                             BEGIN(d_comment);
                          }
@@ -396,18 +408,30 @@ procedure                {
                         }
     "\{"                {
                             column += 2;
-                            yyerror("Suspicious d comment");
+                            yyerror("Suspicious d_comment");
+							error_count++;
                         }
     [^\n]               column++; /* Skip stuff in comments */
     \n                  column = 0;
     <<EOF>>             {
-                            yyerror("Unterminated d comment");
+                            yyerror("Unterminated d_comment");
+							error_count++;
                             yyterminate();
                         }
 }
 
-<<EOF>>                  yyterminate();
-.                        yyerror("Illegal character");	
+[ \t]*					{ /* separator */
+						yylloc.first_column = column;
+						column += yyleng;
+						}
+
+\n						{
+						//yylloc.first_column = column;
+						column = 0;
+						}
+
+<<EOF>>					yyterminate();
+.						yyerror("Illegal character");	
 
 
 
