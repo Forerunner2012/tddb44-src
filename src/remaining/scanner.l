@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+//For larger integer numbers
+#include <stdlib.h>
 
 //#include "scanner.hh"
 // This is where you put #include directives as needed for later labs.
@@ -270,12 +272,13 @@ procedure                {
                          }
 
 {DIGIT}+		{
-			  yylval.ival = atoi(yytext);
-			  yylloc.first_line = yylineno;
-			  yylloc.first_column = column;
-			  column += yyleng;
-			  return T_INTNUM;
-			}
+					char * pEnd;					
+					yylval.ival = strtol(yytext,&pEnd,10);
+					yylloc.first_line = yylineno;
+					yylloc.first_column = column;
+					column += yyleng;
+					return T_INTNUM;
+				}
 
 {DIGIT}+"."		{
 			  yylval.rval = atof(yytext);
