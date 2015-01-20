@@ -547,7 +547,10 @@ type_checker->check_parameters(id, parameter_list);
 sym_index ast_uminus::type_check()
 {
     /* Your code here */
-    return expr->type_check();
+	if(expr->type_check() != integer_type && expr->type_check() != real_type)
+		type_error(pos) << "Uminus operand must be integer_type or real_type (ast_uminus).\n";
+	type= expr->type_check();
+    return type;
 }
 
 sym_index ast_not::type_check()
