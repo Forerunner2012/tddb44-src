@@ -189,17 +189,22 @@ bool ast_optimizer::is_real(ast_expression *node)
 }
 
 //ACCESS (cast) TO VALUE: use of dynamic_cast to access safely to the value and convert with static cast (C++)
-
+// BUT it cause loss of precision and result in different compile-time and run-time results
+// SO we need to avoid static cast as much as possible
 float ast_optimizer::get_float(ast_expression *node)
 {
     switch (node->tag)
     {
     case AST_ID:
-        return static_cast<float>(sym_tab->get_symbol(dynamic_cast<ast_id*>(node)->sym_p)->get_constant_symbol()->const_value.rval);
+		return sym_tab->get_symbol((node->get_ast_id())->sym_p)->get_constant_symbol()->const_value.rval;
+        //return static_cast<float>(sym_tab->get_symbol(dynamic_cast<ast_id*>(node)->sym_p)->get_constant_symbol()->const_value.rval);
     case AST_INTEGER:
-        return static_cast<float>(dynamic_cast<ast_integer*>(node)->value);
+		//This can happen and it's allowed (right or left node of binary operation)
+		return (float)((node->get_ast_integer())->value);
+		//return static_cast<float>(dynamic_cast<ast_integer*>(node)->value);
     case AST_REAL:
-        return dynamic_cast<ast_real*>(node)->value;
+		return (node->get_ast_real())->value;
+        //return dynamic_cast<ast_real*>(node)->value;
     default:
         fatal("Error in optimization: Not a valid access for float (get_float)");
         return -1;
@@ -211,11 +216,16 @@ int ast_optimizer::get_integer(ast_expression *node)
     switch (node->tag)
     {
     case AST_ID:
-        return static_cast<int>(sym_tab->get_symbol(dynamic_cast<ast_id*>(node)->sym_p)->get_constant_symbol()->const_value.ival);
+		return sym_tab->get_symbol((node->get_ast_id())->sym_p)->get_constant_symbol()->const_value.ival;
+		//return static_cast<int>(sym_tab->get_symbol(dynamic_cast<ast_id*>(node)->sym_p)->get_constant_symbol()->const_value.ival);
     case AST_INTEGER:
-        return dynamic_cast<ast_integer*>(node)->value;
+		return (node->get_ast_integer())->value;
+        //return dynamic_cast<ast_integer*>(node)->value;
     case AST_REAL:
-        return static_cast<int>(dynamic_cast<ast_real*>(node)->value);
+		//Shall not happen since we call it when we got 1 or 2 integer value and no float (calculate_integer)
+		fatal("Can't use get_integer from a real_type node !");        
+		//return static_cast<int>(dynamic_cast<ast_real*>(node)->value);
+		return -1;
     default:
         fatal("Error in optimization: Not a valid access for integer (get_integer)");
         return -1;
@@ -223,7 +233,7 @@ int ast_optimizer::get_integer(ast_expression *node)
 }
 
 //CALCULATION OF VALUE: provide functions to do the calculation to optimize the tree
-
+//Left or right can be integer node or float
 float ast_optimizer::calculate_float(ast_binaryoperation *node)
 {
     float left, right;
@@ -245,6 +255,7 @@ float ast_optimizer::calculate_float(ast_binaryoperation *node)
 	}
 }
 
+//Left and right node are integer (call calculate_float instead)
 int ast_optimizer::calculate_integer(ast_binaryoperation *node)
 {
     int left, right;
@@ -272,6 +283,7 @@ int ast_optimizer::calculate_integer(ast_binaryoperation *node)
     }
 }
 
+//Left and right node are integer (it is an error instead)
 int ast_optimizer::calculate_relation(ast_binaryrelation *node)
 {
     int left, right;
