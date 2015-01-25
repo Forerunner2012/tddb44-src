@@ -44,10 +44,10 @@ private:
     bool is_constant(ast_expression *);
     bool is_value(ast_expression *);
     bool is_real(ast_expression *);
-    float get_float(ast_expression *);
-    int get_integer(ast_expression *);
-    float calculate_float(ast_binaryoperation *);
-    int calculate_integer(ast_binaryoperation *);
+    double get_double(ast_expression *);
+    long get_integer(ast_expression *);
+    double calculate_double(ast_binaryoperation *);
+    long calculate_integer(ast_binaryoperation *);
     int calculate_relation(ast_binaryrelation *);
 
 };

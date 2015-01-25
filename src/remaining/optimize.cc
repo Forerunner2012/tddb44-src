@@ -191,7 +191,7 @@ bool ast_optimizer::is_real(ast_expression *node)
 //ACCESS (cast) TO VALUE: use of dynamic_cast to access safely to the value and convert with static cast (C++)
 // BUT it cause loss of precision and result in different compile-time and run-time results
 // SO we need to avoid static cast as much as possible
-float ast_optimizer::get_float(ast_expression *node)
+double ast_optimizer::get_double(ast_expression *node)
 {
     switch (node->tag)
     {
@@ -200,18 +200,18 @@ float ast_optimizer::get_float(ast_expression *node)
         //return static_cast<float>(sym_tab->get_symbol(dynamic_cast<ast_id*>(node)->sym_p)->get_constant_symbol()->const_value.rval);
     case AST_INTEGER:
 		//This can happen and it's allowed (right or left node of binary operation)
-		return (float)((node->get_ast_integer())->value);
+		return (double)((node->get_ast_integer())->value);
 		//return static_cast<float>(dynamic_cast<ast_integer*>(node)->value);
     case AST_REAL:
 		return (node->get_ast_real())->value;
         //return dynamic_cast<ast_real*>(node)->value;
     default:
-        fatal("Error in optimization: Not a valid access for float (get_float)");
+        fatal("Error in optimization: Not a valid access for double (get_double)");
         return -1;
     }
 }
 
-int ast_optimizer::get_integer(ast_expression *node)
+long ast_optimizer::get_integer(ast_expression *node)
 {
     switch (node->tag)
     {
@@ -222,7 +222,7 @@ int ast_optimizer::get_integer(ast_expression *node)
 		return (node->get_ast_integer())->value;
         //return dynamic_cast<ast_integer*>(node)->value;
     case AST_REAL:
-		//Shall not happen since we call it when we got 1 or 2 integer value and no float (calculate_integer)
+		//Shall not happen since we call it when we got 1 or 2 integer value and no double (calculate_integer)
 		fatal("Can't use get_integer from a real_type node !");        
 		//return static_cast<int>(dynamic_cast<ast_real*>(node)->value);
 		return -1;
@@ -233,12 +233,12 @@ int ast_optimizer::get_integer(ast_expression *node)
 }
 
 //CALCULATION OF VALUE: provide functions to do the calculation to optimize the tree
-//Left or right can be integer node or float
-float ast_optimizer::calculate_float(ast_binaryoperation *node)
+//Left or right can be integer node or double
+double ast_optimizer::calculate_double(ast_binaryoperation *node)
 {
-    float left, right;
-    left = get_float(node->left);
-    right = get_float(node->right);
+    double left, right;
+    left = get_double(node->left);
+    right = get_double(node->right);
     switch (node->tag)
     {
     case AST_ADD:
@@ -250,15 +250,15 @@ float ast_optimizer::calculate_float(ast_binaryoperation *node)
     case AST_DIVIDE:
         return left / right;
     default:
-        fatal("Error in optimization: Not a valid operation for real (float)");
+        fatal("Error in optimization: Not a valid operation for real (double)");
         return -1;
 	}
 }
 
-//Left and right node are integer (call calculate_float instead)
-int ast_optimizer::calculate_integer(ast_binaryoperation *node)
+//Left and right node are long integer (call calculate_double instead)
+long ast_optimizer::calculate_integer(ast_binaryoperation *node)
 {
-    int left, right;
+    long left, right;
     left = get_integer(node->left);
     right = get_integer(node->right);
     switch (node->tag)
@@ -278,7 +278,7 @@ int ast_optimizer::calculate_integer(ast_binaryoperation *node)
     case AST_MOD:
         return left % right;
     default:
-        fatal("Error in optimization: Not a valid operation for int (integer)");
+        fatal("Error in optimization: Not a valid operation for long (integer)");
         return -1;
     }
 }
@@ -331,14 +331,14 @@ ast_expression *ast_optimizer::fold_constants(ast_expression *node)
         if (is_value(binop_toop->left) && is_value(binop_toop->right))
         {
 			//If both are values, calculate the operation with left and right value
-			//If one value is float at least, the new replacing node is float (or int if not)
+			//If one value is double at least, the new replacing node is double (or int if not)
             if (is_real(binop_toop->left) || is_real(binop_toop->right))
             {
-                float value = calculate_float(binop_toop);
+                double value = calculate_double(binop_toop);
                 result = new ast_real(binop_toop->left->pos, value);
             }
             else {
-                int value = calculate_integer(binop_toop);
+                long value = calculate_integer(binop_toop);
                 result = new ast_integer(binop_toop->left->pos, value);
             }
         }
